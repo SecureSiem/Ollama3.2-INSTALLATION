@@ -23,6 +23,7 @@ This step ensures the Ollama system service (running as the ollama user) can rea
     id ollama
 
 3. Set ownership and permissions
+
     sudo chown -R ollama:ollama /var/lib/ollama
     sudo chmod 750 /var/lib/ollama
     sudo chmod 750 /var/lib/ollama/models

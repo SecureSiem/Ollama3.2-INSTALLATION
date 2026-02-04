@@ -47,56 +47,56 @@ Perform the following steps on the Wazuh server to configure custom rules, decod
       <order>YARA.published_date</order>
     </decoder>
 
-<decoder name="YARA_child">
-  <parent>YARA_decoder</parent>
-  <regex type="pcre2">score =(\d+),</regex>
-  <order>YARA.threat_score</order>
-</decoder>
+    <decoder name="YARA_child">
+      <parent>YARA_decoder</parent>
+      <regex type="pcre2">score =(\d+),</regex>
+      <order>YARA.threat_score</order>
+    </decoder>
 
-<decoder name="YARA_child">
-  <parent>YARA_decoder</parent>
-  <regex type="pcre2">customer="([^"]+)",</regex>
-  <order>YARA.api_customer</order>
-</decoder>
+    <decoder name="YARA_child">
+      <parent>YARA_decoder</parent>
+      <regex type="pcre2">customer="([^"]+)",</regex>
+      <order>YARA.api_customer</order>
+    </decoder>
 
-<decoder name="YARA_child">
-  <parent>YARA_decoder</parent>
-  <regex type="pcre2">hash1="([^"]+)",</regex>
-  <order>YARA.file_hash</order>
-</decoder>
+    <decoder name="YARA_child">
+      <parent>YARA_decoder</parent>
+      <regex type="pcre2">hash1="([^"]+)",</regex>
+      <order>YARA.file_hash</order>  
+    </decoder>
 
-<decoder name="YARA_child">
-  <parent>YARA_decoder</parent>
-  <regex type="pcre2">tags="([^"]+)",</regex>
-  <order>YARA.tags</order>
-</decoder>
+    <decoder name="YARA_child">
+      <parent>YARA_decoder</parent>
+      <regex type="pcre2">tags="([^"]+)",</regex>
+      <order>YARA.tags</order>
+    </decoder>
 
-<decoder name="YARA_child">
-  <parent>YARA_decoder</parent>
-  <regex type="pcre2">minimum_YARA="([^"]+)"\]</regex>
-  <order>YARA.minimum_YARA_version</order>
-</decoder>
+    <decoder name="YARA_child">
+      <parent>YARA_decoder</parent>
+      <regex type="pcre2">minimum_YARA="([^"]+)"\]</regex>
+      <order>YARA.minimum_YARA_version</order>
+    </decoder>
 
-<decoder name="YARA_child">
-  <parent>YARA_decoder</parent>
-  <regex type="pcre2">\] (.*) \|</regex>
-  <order>YARA.scanned_file</order>
-</decoder>
+    <decoder name="YARA_child">
+      <parent>YARA_decoder</parent>
+      <regex type="pcre2">\] (.*) \|</regex>
+      <order>YARA.scanned_file</order>
+    </decoder>
 
-<decoder name="YARA_child">
-  <parent>YARA_decoder</parent>
-  <regex type="pcre2">chatgpt_response: (.*)</regex>
-  <order>YARA.chatgpt_response</order>
-</decoder>
+    <decoder name="YARA_child">
+      <parent>YARA_decoder</parent>
+      <regex type="pcre2">chatgpt_response: (.*)</regex>
+      <order>YARA.chatgpt_response</order>
+    </decoder>
 
-<decoder name="YARA_child">
-  <parent>YARA_decoder</parent>
-  <regex type="pcre2">Successfully deleted (.*)</regex>
-  <order>YARA.file_deleted</order>
-</decoder>
+    <decoder name="YARA_child">
+      <parent>YARA_decoder</parent>
+      <regex type="pcre2">Successfully deleted (.*)</regex>
+      <order>YARA.file_deleted</order>
+    </decoder>
 
-<decoder name="YARA_child">
-  <parent>YARA_decoder</parent>
-  <regex type="pcre2">Unable to delete (.*)</regex>
-  <order>YARA.file_not_deleted</order>
-</decoder>
+    <decoder name="YARA_child">
+      <parent>YARA_decoder</parent>
+      <regex type="pcre2">Unable to delete (.*)</regex>
+      <order>YARA.file_not_deleted</order>
+    </decoder>

@@ -19,16 +19,20 @@ B. Create Models Directory and Set Permissions
 This step ensures the Ollama system service (running as the ollama user) can read and write model files.
 
 1. Create the models directory
-    sudo mkdir -p /var/lib/ollama/models
+    
+                sudo mkdir -p /var/lib/ollama/models
 
 2. Confirm the Ollama service user exists
-    id ollama
+
+                id ollama
 
 3. Set ownership and permissions
 
-    sudo chown -R ollama:ollama /var/lib/ollama
-    sudo chmod 750 /var/lib/ollama
-    sudo chmod 750 /var/lib/ollama/models
+                sudo chown -R ollama:ollama /var/lib/ollama
+
+                sudo chmod 750 /var/lib/ollama
+
+                sudo chmod 750 /var/lib/ollama/models
 
 C. Configure Ollama Using systemd Override
 1. Edit the systemd override file

@@ -1,5 +1,8 @@
 # Windows 11 endpoint
 
+# Configuration
+Perform the following steps to set up the YARA and ollama integration. Choose either Ubuntu or Windows configuration depending on the operating system of the monitored endpoint.
+
 Perform the following steps to install Python, YARA, and download YARA rules.
 
 1. Download the Python executable installer from the official Python website.

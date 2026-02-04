@@ -100,3 +100,54 @@ Perform the following steps on the Wazuh server to configure custom rules, decod
       <regex type="pcre2">Unable to delete (.*)</regex>
       <order>YARA.file_not_deleted</order>
     </decoder>
+
+2. Add the following rules to the /var/ossec/etc/rules/local_rules.xml file. The rules detect FIM events in the monitored directory. This triggers the YARA Active response script to delete a file if identified as a malicious file.
+
+<group name="syscheck,">
+  <rule id="100300" level="5">
+    <if_sid>550</if_sid>
+    <field name="file">/home</field>
+    <description>File modified in /home directory.</description>
+  </rule>
+
+  <rule id="100301" level="5">
+    <if_sid>554</if_sid>
+    <field name="file">/home</field>
+    <description>File added to /home directory.</description>
+  </rule>
+  <rule id="100302" level="5">
+    <if_sid>550</if_sid>
+    <field name="file" type="pcre2">(?i)C:\\Users.+Downloads</field>
+    <description>File modified in the downloads directory.</description>
+  </rule>
+
+  <rule id="100303" level="5">
+    <if_sid>554</if_sid>
+    <field name="file" type="pcre2">(?i)C:\\Users.+Downloads</field>
+    <description>File added to the downloads directory.</description>
+  </rule>
+</group>
+
+<group name="yara,">
+  <rule id="108000" level="0">
+    <decoded_as>YARA_decoder</decoded_as>
+    <description>YARA grouping rule</description>
+  </rule>
+  <rule id="108001" level="10">
+    <if_sid>108000</if_sid>
+    <match>wazuh-YARA: INFO - Scan result: </match>
+    <description>File "$(YARA.scanned_file)" is a positive match for YARA rule: $(YARA.rule_name)</description>
+  </rule>
+
+  <rule id="108002" level="5">
+    <if_sid>108000</if_sid>
+    <field name="yara.file_deleted">\.</field>
+    <description>Active response successfully removed malicious file "$(YARA.file_deleted)"</description>
+  </rule>
+
+  <rule id="108003" level="12">
+    <if_sid>108000</if_sid>
+    <field name="YARA.file_not_deleted">\.</field>
+    <description>Active response unable to delete malicious file "$(YARA.file_not_deleted)"</description>
+  </rule>
+</group>

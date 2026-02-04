@@ -30,3 +30,7 @@ Perform the following steps to install Python, YARA, and download YARA rules.
         python -c "from valhallaAPI.valhalla import ValhallaAPI; v = ValhallaAPI(api_key='1111111111111111111111111111111111111111111111111111111111111111'); response = v.get_rules_text(); open('yara_rules.yar', 'w').write(response)"
         mkdir 'C:\Program Files (x86)\ossec-agent\active-response\bin\yara\rules\'
         cp yara_rules.yar 'C:\Program Files (x86)\ossec-agent\active-response\bin\yara\rules\'
+
+7. Create a script yara.py in the C:\Program Files (x86)\ossec-agent\active-response\bin\ directory. This script runs a YARA scan against any file modified or added to the monitored   directory. It also queries ollama3.2 to enrich the logs and attempts to remove malware files detected by YARA.
+   replace <API_KEY> with your ollama URL key and <OLLAMA_MODEL> with your preferred OpenAI model. The model used in this POC guide is llama3.2:
+   

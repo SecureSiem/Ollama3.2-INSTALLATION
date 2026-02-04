@@ -1,8 +1,10 @@
 A. Install Ollama (System Service)
 1. Install Ollama
+        
     curl -fsSL https://ollama.com/install.sh | sh
 
 2. Verify Installation
+        
     systemctl status ollama
     which ollama
     ollama --version

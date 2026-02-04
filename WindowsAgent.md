@@ -33,4 +33,22 @@ Perform the following steps to install Python, YARA, and download YARA rules.
 
 7. Create a script yara.py in the C:\Program Files (x86)\ossec-agent\active-response\bin\ directory. This script runs a YARA scan against any file modified or added to the monitored   directory. It also queries ollama3.2 to enrich the logs and attempts to remove malware files detected by YARA.
    replace <API_KEY> with your ollama URL key and <OLLAMA_MODEL> with your preferred OpenAI model. The model used in this POC guide is llama3.2:
+
+        yara.py
+
+8. Run the following command using PowerShell to convert the yara.py script to an executable file:
+
+        pip install pyinstaller
+        pyinstaller -F "C:\Program Files (x86)\ossec-agent\active-response\bin\yara.py"
+
+NOTE:  If you run the above commands as Administrator, the executable file will be in the C:\Windows\System32\dist directory.
+
+9. Copy the yara.exe executable file to C:\Program Files (x86)\ossec-agent\active-response\bin\ directory on the monitored endpoint.
+10. Add the following within the <syscheck> block of the Wazuh agent C:\Program Files (x86)\ossec-agent\ossec.conf configuration file to monitor the Users directory:
+
+        <directories realtime="yes">C:\Users\*\Downloads</directories>
+
+11. Restart the Wazuh agent to apply the configuration changes:
+
+        Restart-Service -Name wazuh
    

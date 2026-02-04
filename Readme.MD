@@ -50,9 +50,6 @@ Save and exit.
         sudo systemctl daemon-reload
         sudo systemctl restart ollama
 
-3. Verify effective configuration
-
-        systemctl cat ollama
 
 D. Install Ollama Models
 

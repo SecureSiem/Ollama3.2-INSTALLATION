@@ -1,115 +1,186 @@
-A. Install Ollama (System Service)
-1. Install Ollama
-        
+# Ollama on Ubuntu 22.04 (Systemd Service) Setup
+
+This guide installs Ollama as a systemd service, stores models in /var/lib/ollama/models, and exposes the API on port 11434 for integrations (example: Wazuh).
+
+# A. Install Ollama (System Service)
+1) Install Ollama
+
         curl -fsSL https://ollama.com/install.sh | sh
 
-2. Verify Installation
-        
-        systemctl status ollama
-        which ollama
-        ollama --version
+2) Verify binary and service
+which ollama
+ollama --version
+systemctl status ollama --no-pager
 
 
 Expected binary location:
 
 /usr/local/bin/ollama
 
+3) Enable and start service
+sudo systemctl enable --now ollama
+systemctl status ollama --no-pager
+
+
+✅ Expected: active (running)
+
 B. Create Models Directory and Set Permissions
 
-This step ensures the Ollama system service (running as the ollama user) can read and write model files.
+Ollama system service runs as the ollama user, so it must own the storage path.
 
-1. Create the models directory
-    
-        sudo mkdir -p /var/lib/ollama/models
-
-3. Set ownership and permissions
-
-        sudo chown -R ollama:ollama /var/lib/ollama
-
-        sudo chmod 750 /var/lib/ollama
-
-        sudo chmod 750 /var/lib/ollama/models
-
-C. Configure Ollama Using systemd Override
-1. Edit the systemd override file
-
-        sudo systemctl edit ollama
+sudo mkdir -p /var/lib/ollama/models
+sudo chown -R ollama:ollama /var/lib/ollama
+sudo chmod 750 /var/lib/ollama
+sudo chmod 750 /var/lib/ollama/models
 
 
-Add the following configuration in between ### and ### don't add it bottom side:
+Verify:
 
-    [Service]
-    Environment="OLLAMA_HOST=0.0.0.0:11434"
-    Environment="OLLAMA_MODELS=/var/lib/ollama/models"
+sudo ls -ld /var/lib/ollama /var/lib/ollama/models
 
 
-Save and exit.
+✅ Expected owner/group: ollama ollama
 
-2. Apply configuration changes
+C. Configure Ollama Using systemd Override (Recommended)
 
-        sudo systemctl daemon-reload
-        sudo systemctl restart ollama
+This ensures:
+
+API bind address is controlled (OLLAMA_HOST)
+
+Models location is forced (OLLAMA_MODELS)
+
+1) Create the drop-in override file (guaranteed method)
+
+Important: this method guarantees the override exists at:
+/etc/systemd/system/ollama.service.d/override.conf
+
+sudo mkdir -p /etc/systemd/system/ollama.service.d
+
+sudo tee /etc/systemd/system/ollama.service.d/override.conf >/dev/null <<'EOF'
+[Service]
+Environment="OLLAMA_HOST=0.0.0.0:11434"
+Environment="OLLAMA_MODELS=/var/lib/ollama/models"
+EOF
+
+2) Apply changes
+sudo systemctl daemon-reload
+sudo systemctl restart ollama
+
+3) Confirm override is applied
+systemctl cat ollama
+sudo systemctl show ollama --property=Environment --no-pager
 
 
-D. Install Ollama Models
+✅ Expected: Environment contains OLLAMA_HOST=0.0.0.0:11434 and OLLAMA_MODELS=/var/lib/ollama/models
 
-Since Ollama runs as a system service, use sudo to avoid permission issues.
+D. Fix if Service Fails (start-limit-hit)
 
-Option 1: Pull the model explicitly
+If you see start-limit-hit or the service won’t start:
 
-        sudo ollama pull llama3.2
+sudo systemctl reset-failed ollama
+sudo systemctl start ollama
+systemctl status ollama --no-pager
 
-Option 2: Run the model (auto-pull if not installed)
 
-        sudo ollama run llama3.2
+To see the real reason for failure:
 
-Verify installed models
+sudo journalctl -u ollama -b --no-pager -n 200
 
-        sudo ollama list
-        sudo ollama show llama3.2
+E. Install Models
 
-E. Verify Model Files on Disk
+Pull a model (example: llama3.2):
 
-        sudo ls -la /var/lib/ollama/models
-        sudo du -sh /var/lib/ollama/models
+sudo ollama pull llama3.2
+
+
+Run model (auto-pulls if missing):
+
+sudo ollama run llama3.2
+
+
+Verify models:
+
+sudo ollama list
+sudo ollama show llama3.2
+
+F. Verify Model Files on Disk
+sudo find /var/lib/ollama/models -maxdepth 2 -type d -print
+sudo du -sh /var/lib/ollama/models
 
 
 Expected directories:
 
-        blobs/
-        manifests/
+blobs/
 
-F. Verify Ollama API Access (For Wazuh Integration)
-1. List available models via API
+manifests/
 
-        curl http://127.0.0.1:11434/api/tags
+G. Verify Ollama API Access
 
-2. Generate a test response
+List models via API:
 
-        curl http://127.0.0.1:11434/api/generate \
-        -d '{"model":"llama3.2","prompt":"hello"}'
-
-3. Confirm port is listening
-
-        ss -tulnp | grep 11434
-
-Security Note
-
-If Wazuh runs on the same host, bind Ollama to localhost:
-
-        Environment="OLLAMA_HOST=127.0.0.1:11434"
+curl http://127.0.0.1:11434/api/tags
 
 
-If Wazuh is on a remote host, keep 0.0.0.0 but restrict access using firewall rules.
+Generate a response:
+
+curl http://127.0.0.1:11434/api/generate \
+  -d '{"model":"llama3.2","prompt":"hello"}'
+
+
+Confirm port listening:
+
+ss -tulnp | grep 11434
+
+H. Security Notes (Important)
+If Wazuh runs on the SAME host (recommended)
+
+Bind to localhost only:
+
+Edit override:
+
+sudo nano /etc/systemd/system/ollama.service.d/override.conf
+
+
+Set:
+
+[Service]
+Environment="OLLAMA_HOST=127.0.0.1:11434"
+Environment="OLLAMA_MODELS=/var/lib/ollama/models"
+
+
+Apply:
+
+sudo systemctl daemon-reload
+sudo systemctl restart ollama
+
+If Wazuh runs on a REMOTE host
+
+Keep 0.0.0.0:11434, but restrict access using firewall rules to only the Wazuh server IP.
+
+I. Optional Cleanup: Remove Old Duplicate Model Location
+
+If you previously pulled models before setting OLLAMA_MODELS, you may have duplicate storage under:
+/usr/share/ollama/.ollama/models
+
+Check:
+
+sudo find / -type d -name manifests -path "*ollama*" 2>/dev/null
+
+
+If you confirm /var/lib/ollama/models is correct and contains your models, remove the old one:
+
+sudo systemctl stop ollama
+sudo rm -rf /usr/share/ollama/.ollama/models
+sudo systemctl start ollama
 
 Summary
 
-Ollama is installed as a system service
+Ollama installed as a systemd service
 
-Models are stored in /var/lib/ollama/models
+Service runs as ollama:ollama
 
-Configuration is managed via systemd overrides
+Models stored in: /var/lib/ollama/models
 
-The Ollama API is available on port 11434
+API available at: http://<host>:11434
 
-This setup is suitable for Wazuh and SOC automation use cases
+Suitable for Wazuh / SOC automation integrations
